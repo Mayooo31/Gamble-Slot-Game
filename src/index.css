@@ -1,0 +1,19 @@
+@import url("https://api.fontshare.com/v2/css?f[]=chillax@600,500,300,700,400&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #203342;
+  color: #f7f5ef;
+  font-family: "Chillax", sans-serif, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell,
+    Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+}
