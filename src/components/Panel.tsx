@@ -1,26 +1,30 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 
 // prettier-ignore
 import {ArrowPathIcon,BookOpenIcon,PlayCircleIcon,ChevronUpIcon,ChevronDownIcon,PauseCircleIcon} from "@heroicons/react/24/solid";
+import { bets } from "../utils/initialBoard";
+import { formatCur } from "../utils/formatCurr";
 
 type Props = {
   spinHandler: () => void;
   disableSpinButton: boolean;
   disableAutoSpinButton: boolean;
   setDisableAutoSpinButton: React.Dispatch<React.SetStateAction<boolean>>;
+  bet: number;
+  setBet: React.Dispatch<React.SetStateAction<number>>;
+  balance: number;
 };
-
-const bets = [0.5, 1, 2.5, 5, 10, 20, 30, 50, 75, 100];
 
 const Panel = ({
   spinHandler,
   disableSpinButton,
   setDisableAutoSpinButton,
   disableAutoSpinButton,
+  bet,
+  setBet,
+  balance,
 }: Props) => {
-  const [bet, setBet] = useState<number>(3);
-
   const changeBet = (change: string) => {
     if (change === "increase") {
       if (bet === bets.length - 1) return;
@@ -42,14 +46,16 @@ const Panel = ({
         </button>
         <div className="flex flex-col">
           <p className="text-yellow-500">Balance:</p>
-          <p className="text-2xl text-yellow-500">€ 5000.00</p>
+          <p className="text-2xl text-yellow-500">{formatCur(balance, "en-US", "EUR")}</p>
         </div>
       </div>
       <div className="flex items-center gap-5">
         <div className="flex gap-2 items-center">
           <div className="flex flex-col">
             <p className="text-yellow-500">Bet:</p>
-            <p className="text-2xl text-yellow-500">€ {bets[bet]}</p>
+            <p className="text-2xl text-yellow-500">
+              {formatCur(bets[bet], "en-US", "EUR")}
+            </p>
           </div>
           <div className="flex flex-col">
             <button onClick={() => changeBet("increase")}>

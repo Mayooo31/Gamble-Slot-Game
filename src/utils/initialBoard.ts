@@ -12,7 +12,9 @@ import ten from "../assets/ten.png";
 import nine from "../assets/nine.png";
 
 // prettier-ignore
-export const initialBoard: string[] = [spades,a,diamond,clubs,j,a,heart,clubs,vs,q,wild,k,j,heart,heart,a,k,diamond,wild,wild,clubs,clubs,clubs,diamond,spades,];
+export const initialBoard: string[] = [wild,q,wild,k,wild,a,q,wild,k,j,heart,vs,vs,vs,heart,a,k,diamond,wild,wild,clubs,clubs,clubs,diamond,spades,];
+
+export const bets = [0.5, 1, 2.5, 5, 10, 20, 30, 50, 75, 100];
 
 export const spin = () => {
   const newSpin: string[] = [];
@@ -21,7 +23,7 @@ export const spin = () => {
 
     if (randomNumber <= 1) {
       const randomNumb = Math.floor(Math.random() * 3) + 1;
-      if (randomNumb === 1) {
+      if (randomNumb < 3) {
         newSpin.push(vs);
       } else newSpin.push(wild);
       continue;
