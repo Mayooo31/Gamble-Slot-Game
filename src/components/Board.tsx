@@ -1,17 +1,17 @@
-import { useCtx } from "../context/context";
-import { bets, initialBoard, spin } from "../utils/initialBoard";
-import { motion } from "framer-motion";
 import { useState, useRef } from "react";
+import { useCtx } from "../context/context";
+import { motion } from "framer-motion";
+import {
+  bets,
+  initialBoard,
+  cols,
+  spin,
+  winsPattern,
+  multipleWin,
+} from "../utils/initialBoard";
 
 import Panel from "./Panel";
-
-const cols = [
-  [0, 5, 10, 15, 20],
-  [1, 6, 11, 16, 21],
-  [2, 7, 12, 17, 22],
-  [3, 8, 13, 18, 23],
-  [4, 9, 14, 19, 24],
-];
+import { formatCur } from "../utils/formatCurr";
 
 const Board = () => {
   const { board, setBoard } = useCtx();
@@ -21,18 +21,21 @@ const Board = () => {
   const [disableAutoSpinButton, setDisableAutoSpinButton] = useState<boolean>(false);
   const [bet, setBet] = useState<number>(3);
   const [balance, setBalance] = useState<number>(5000);
-  const [isWin, setIsWin] = useState<number[]>([11, 12, 13] as number[]);
+  const [isWin, setIsWin] = useState<number[]>([0, 7, 14, 16, 23] as number[]);
+  const [totalWin, setTotalWin] = useState<number>(99999);
 
   // refs for current states in setTimeout...
   const autoSpinRef = useRef<boolean>(disableAutoSpinButton);
   const balanceRef = useRef<number>(balance);
   const betRef = useRef<number>(bet);
   const isWinRef = useRef<number[]>(isWin);
+  const totalWinRef = useRef<number>(totalWin);
 
   autoSpinRef.current = disableAutoSpinButton;
   balanceRef.current = balance;
   betRef.current = bet;
   isWinRef.current = isWin;
+  totalWinRef.current = totalWin;
 
   const setDelayHandler = (index: number) => {
     let delay = 0;
@@ -58,19 +61,11 @@ const Board = () => {
       setAnimateBoard(false);
     }, 1700);
 
-    const winsPattern = [
-      [0, 1, 2, 3, 4],
-      [5, 6, 7, 8, 9],
-      [10, 11, 12, 13, 14],
-      [15, 16, 17, 18, 19],
-      [20, 21, 22, 23, 24],
-      [0, 6, 12, 18, 24],
-      [4, 8, 12, 16, 20],
-    ];
-
     // I know...
     setTimeout(() => {
+      let wonMoney = 0;
       const wins: number[] = [];
+
       for (let i = 0; i < winsPattern.length; i++) {
         let possibleWin: number[] = [];
         let values: string[] = [];
@@ -151,15 +146,49 @@ const Board = () => {
           if (index === 4) {
             if (possibleWin.length > 2) {
               wins.push(...possibleWin);
+
+              const differentCartThanWild = values.find(card => !card.includes("wild"));
+              if (differentCartThanWild === undefined) {
+                wonMoney += values.length * bets[betRef.current] * multipleWin.wild[5];
+                return;
+              }
+
+              const card = differentCartThanWild.split("media/")[1].split(".")[0];
+              if (values.length === 3) {
+                wonMoney +=
+                  values.length *
+                  bets[betRef.current] *
+                  multipleWin[card as keyof typeof multipleWin][3];
+              } else if (values.length === 4) {
+                wonMoney +=
+                  values.length *
+                  bets[betRef.current] *
+                  multipleWin[card as keyof typeof multipleWin][4];
+              } else {
+                wonMoney +=
+                  values.length *
+                  bets[betRef.current] *
+                  multipleWin[card as keyof typeof multipleWin][5];
+              }
             }
           }
         });
       }
 
-      console.log(wins);
+      setBalance(balanceRef.current + wonMoney);
+      setTotalWin(wonMoney);
       setIsWin(wins);
-      if (autoSpinRef.current) return spinHandler();
-      setDisableSpinButton(false);
+      if (autoSpinRef.current) {
+        if (wonMoney === 0) {
+          return spinHandler();
+        } else {
+          setTimeout(() => {
+            return spinHandler();
+          }, 1500);
+        }
+      } else {
+        setDisableSpinButton(false);
+      }
     }, 1750);
   };
 
@@ -169,10 +198,19 @@ const Board = () => {
       <h3 className="text-3xl font-semibold text-green-600 text-center">
         Dead Or A Wild
       </h3>
-      <div className="grid grid-cols-5 grid-rows-5 aspect-square gap-2 max-w-[600px] text-center m-auto px-2 overflow-hidden">
+      <div className="relative grid grid-cols-5 grid-rows-5 aspect-square gap-2 max-w-[600px] text-center m-auto px-2 overflow-hidden">
         {board.map((symbol, index) => {
           return (
-            <div
+            <motion.div
+              animate={{
+                background: isWin.includes(index) ? "#187b3c" : "#361b14",
+              }}
+              transition={{
+                background: {
+                  type: "spring",
+                  duration: isWin.includes(index) ? 0.4 : 0.2,
+                },
+              }}
               key={index}
               className="relative bg-[#361b14] rounded-md flex aspect-square justify-center items-center"
             >
@@ -184,7 +222,7 @@ const Board = () => {
                 transition={{
                   delay: animateBoard ? setDelayHandler(index) : 0,
                   type: animateBoard ? "spring" : "none",
-                  duration: animateBoard ? 0.4 : 0,
+                  duration: animateBoard ? 0.6 : 0,
                   scale: {
                     type: "spring",
                     duration: isWin.length > 0 ? 0.4 : 0.2,
@@ -202,7 +240,7 @@ const Board = () => {
                   y: {
                     delay: animateBoard ? setDelayHandler(index) : 0,
                     type: animateBoard ? "spring" : "none",
-                    duration: animateBoard ? 0.4 : 0,
+                    duration: animateBoard ? 0.6 : 0,
                   },
                   scale: {
                     type: "spring",
@@ -212,9 +250,30 @@ const Board = () => {
                 src={symbol}
                 className="max-h-[90%] z-10"
               />
-            </div>
+            </motion.div>
           );
         })}
+
+        <motion.div
+          animate={{
+            scale: isWin.length > 0 ? 1 : 0,
+            translateX: "-50%",
+            translateY: "-50%",
+          }}
+          transition={{
+            duration: 0,
+            scale: {
+              bounce: 0.5,
+              type: "spring",
+              duration: isWin.length > 0 ? 0.4 : 0.2,
+            },
+          }}
+          className="absolute p-4 rounded-xl bg-green-600 text-yellow-500 w-max top-[50%] left-[50%] z-20"
+        >
+          <h1 className="text-4xl font-medium">
+            {totalWin === 99999 ? "Up to 5000x" : formatCur(totalWin, "en-US", "EUR")}
+          </h1>
+        </motion.div>
       </div>
       <Panel
         spinHandler={spinHandler}
