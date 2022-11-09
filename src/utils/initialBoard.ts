@@ -12,7 +12,9 @@ import ten from "../assets/ten.png";
 import nine from "../assets/nine.png";
 
 // prettier-ignore
-export const initialBoard: string[] = [vs,q,wild,k,clubs,a,q,vs,k,j,heart,j,heart,j,vs,a,vs,diamond,wild,wild,clubs,clubs,clubs,vs,spades,];
+export const initialBoard: string[] = [vs,wild,wild,k,clubs,a,q,vs,k,j,heart,j,heart,j,vs,a,vs,diamond,wild,wild,clubs,clubs,clubs,vs,spades,];
+
+export const initialWin = [0, 7, 14, 16, 23];
 
 export const bets = [0.5, 1, 2.5, 5, 10, 20, 30, 50, 75, 100];
 
@@ -90,14 +92,19 @@ export const multipleWin = {
     4: 0,
     5: 4,
   },
+  vs: {
+    3: 0.5,
+    4: 1,
+    5: 1.5,
+  },
 };
 
-export const spin = () => {
+export const spin = (normalSpin = true) => {
   const newSpin: string[] = [];
   for (let i = 0; i < initialBoard.length; i++) {
-    const randomNumber = Math.floor(Math.random() * 100) + 1;
+    const randomNumber = Math.floor(Math.random() * 101);
 
-    if (randomNumber <= 1) {
+    if (normalSpin ? randomNumber <= 1 : randomNumber <= 3) {
       newSpin.push(vs);
       continue;
     }
@@ -147,4 +154,56 @@ export const spin = () => {
     }
   }
   return newSpin;
+};
+
+type multipliedType = {
+  multipliedVs: number[];
+  multipliedTotal: number;
+};
+
+export const multipleVs = (amountOfVs: number) => {
+  const multiplied: multipliedType = {
+    multipliedVs: [],
+    multipliedTotal: 1,
+  };
+  for (let i = 0; i < amountOfVs; i++) {
+    const randomNumber = Math.floor(Math.random() * 100) + 1;
+
+    if (randomNumber <= 10) {
+      multiplied.multipliedVs.push(2);
+      multiplied.multipliedTotal += 2;
+      continue;
+    }
+    if (randomNumber <= 20) {
+      multiplied.multipliedVs.push(5);
+      multiplied.multipliedTotal += 5;
+      continue;
+    }
+    if (randomNumber <= 40) {
+      multiplied.multipliedVs.push(10);
+      multiplied.multipliedTotal += 10;
+      continue;
+    }
+    if (randomNumber <= 60) {
+      multiplied.multipliedVs.push(15);
+      multiplied.multipliedTotal += 15;
+      continue;
+    }
+    if (randomNumber <= 80) {
+      multiplied.multipliedVs.push(25);
+      multiplied.multipliedTotal += 25;
+      continue;
+    }
+    if (randomNumber <= 90) {
+      multiplied.multipliedVs.push(50);
+      multiplied.multipliedTotal += 50;
+      continue;
+    }
+    if (randomNumber <= 100) {
+      multiplied.multipliedVs.push(100);
+      multiplied.multipliedTotal += 100;
+      continue;
+    }
+  }
+  return multiplied;
 };

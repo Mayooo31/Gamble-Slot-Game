@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { motion } from "framer-motion";
 
 // prettier-ignore
@@ -14,9 +13,12 @@ type Props = {
   bet: number;
   setBet: React.Dispatch<React.SetStateAction<number>>;
   balance: number;
+  totalWin: number | string;
+  freeSpinsLeftRef: any;
 };
 
 const Panel = ({
+  totalWin,
   spinHandler,
   disableSpinButton,
   setDisableAutoSpinButton,
@@ -24,6 +26,7 @@ const Panel = ({
   bet,
   setBet,
   balance,
+  freeSpinsLeftRef,
 }: Props) => {
   const changeBet = (change: string) => {
     if (change === "increase") {
@@ -46,7 +49,21 @@ const Panel = ({
         </button>
         <div className="flex flex-col">
           <p className="text-yellow-500">Balance:</p>
-          <p className="text-2xl text-yellow-500">{formatCur(balance, "en-US", "EUR")}</p>
+          <motion.p
+            animate={{
+              scale: typeof totalWin === "number" && totalWin !== 0 ? [1.3, 1] : 1,
+              color:
+                typeof totalWin === "number" && totalWin !== 0
+                  ? ["rgb(34 197 94)", "rgb(234 179 8)"]
+                  : "rgb(234 179 8)",
+            }}
+            transition={{
+              duration: 0.4,
+            }}
+            className="text-2xl"
+          >
+            {formatCur(balance, "en-US", "EUR")}
+          </motion.p>
         </div>
       </div>
       <div className="flex items-center gap-5">
@@ -70,24 +87,39 @@ const Panel = ({
             </button>
           </div>
         </div>
-        <motion.button
-          onClick={spinHandler}
-          animate={{
-            rotate: disableSpinButton ? 90 : 0,
-            scale: !disableSpinButton ? 1 : 0.9,
-          }}
-          transition={{
-            type: "spring",
-            duration: 0.6,
-            bounce: 0.5,
-          }}
-          className={`bg-green-600 ${
-            !disableSpinButton &&
-            "hover:bg-green-700 hover:ease-in-out hover:duration-100"
-          } rounded-full p-2 ${disableSpinButton && "bg-red-500"}`}
-        >
-          <ArrowPathIcon className={`h-12 w-12 text-yellow-500`} />
-        </motion.button>
+        <div className="relative cursor-pointer" onClick={spinHandler}>
+          <motion.button
+            animate={{
+              rotate: disableSpinButton ? 90 : 0,
+              scale: !disableSpinButton ? 1 : 0.9,
+            }}
+            transition={{
+              type: "spring",
+              duration: 0.6,
+              bounce: 0.5,
+            }}
+            className={`bg-green-600 ${
+              !disableSpinButton &&
+              "hover:bg-green-700 hover:ease-in-out hover:duration-100"
+            } rounded-full p-2 ${disableSpinButton && "bg-red-500"}`}
+          >
+            {
+              <ArrowPathIcon
+                className={`h-12 w-12 text-yellow-500 ${
+                  freeSpinsLeftRef.current.spins !== 0 &&
+                  freeSpinsLeftRef.current.spins !== 10 &&
+                  "opacity-0"
+                }`}
+              />
+            }
+          </motion.button>
+          {freeSpinsLeftRef.current.spins !== 0 &&
+            freeSpinsLeftRef.current.spins !== 10 && (
+              <p className="absolute top-[50%] left-[50%] text-yellow-500 font-medium translate-x-[-50%] translate-y-[-50%] text-5xl">
+                {freeSpinsLeftRef.current.spins}
+              </p>
+            )}
+        </div>
         <button
           onClick={() => {
             setDisableAutoSpinButton(!disableAutoSpinButton);
